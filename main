@@ -1,0 +1,35 @@
+from langchain_ollama import OllamaLLM
+from langchain_core.prompts import ChatPromptTemplate
+
+# Simplified template for faster processing
+template = """
+Answer the question: {question}
+"""
+
+# Model setup with token limit for faster responses
+model = OllamaLLM(model="llama3", max_tokens=100)
+prompt = ChatPromptTemplate.from_template(template)
+chain = prompt | model 
+
+# Limit the conversation context to the most recent exchanges
+MAX_CONTEXT_LENGTH = 5
+
+def handle_conversation(): 
+    context = []
+    print("Welcome to Jarvis!\nType or say 'bye jarvis' to quit")
+    
+    while True: 
+        user_input = input("You:     ")
+        if user_input.lower() == "bye jarvis":
+            break
+
+        # Limit the context size and invoke the model synchronously
+        result = chain.invoke({"context": "\n".join(context[-MAX_CONTEXT_LENGTH:]), "question": user_input})
+        print("Jarvis: ", result)
+        
+        # Append the latest interaction to the context
+        context.append(f"User: {user_input}")
+        context.append(f"AI: {result}")
+
+if __name__ == "__main__":
+    handle_conversation()
